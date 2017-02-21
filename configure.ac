@@ -341,6 +341,41 @@ if test "x$enable_btrfs" = "xyes" \
 fi
 AM_CONDITIONAL(HAVE_BTRFS, [test "x$have_btrfs" = "xyes"])
 
+# loop module
+have_loop=no
+AC_ARG_ENABLE(loop, AS_HELP_STRING([--enable-loop], [enable loop support]))
+if test "x$enable_loop" = "xyes" \
+     -o "x$enable_modules" = "xyes"; then
+    # libblockdev
+    SAVE_CFLAGS=$CFLAGS
+    SAVE_LDFLAGS=$LDFLAGS
+    CFLAGS="$GLIB_CFLAGS"
+    LDFLAGS="$GLIB_LIBS"
+    # We don't use AC_CHECK_HEADER to avoid these warnings:
+    #   - accepted by the compiler, rejected by the preprocessor!
+    #   - proceeding with the compiler's result
+    AC_MSG_CHECKING(["libblockdev-loop presence"])
+    AC_TRY_COMPILE([#include <blockdev/loop.h>], [],
+                   [AC_MSG_RESULT([yes])
+                    AC_DEFINE(HAVE_LOOP, 1, [Define, if libblockdev-loop is available])
+                    have_loop=yes],
+                   [AC_MSG_RESULT([no])
+                    have_loop=no])
+    CFLAGS=$SAVE_CFLAGS
+    LDFLAGS=$SAVE_LDFLAGS
+
+    LOOP_CFLAGS=""
+    LOOP_LIBS="-lbd_loop"
+
+    if test "x$have_loop" = "xno"; then
+      AC_MSG_ERROR([loop support requested but header or library not found])
+    fi
+
+    AC_SUBST([LOOP_CFLAGS])
+    AC_SUBST([LOOP_LIBS])
+fi
+AM_CONDITIONAL(HAVE_LOOP, [test "x$have_loop" = "xyes"])
+
 # ZRAM module
 have_kbd="no"
 have_swap="no"
@@ -666,6 +701,7 @@ echo "
         Building man pages:         ${enable_man}
 
         BTRFS module:               ${have_btrfs}
+        Loop module:                ${have_loop}
         iSCSI module:               ${have_iscsi}${have_libiscsi_session_info_msg}
         LVM2  module:               ${have_lvm2}
         LVMCache:                   ${have_lvmcache}
