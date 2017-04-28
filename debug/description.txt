@@ -1,0 +1,12 @@
+There is an unspecified issue in *_update function in src/udiskslinuxloop.c
+
+
+Running run30 script in project root directory will reiterate failing tests and recreate the issue (cca 2-6 times out of 30).
+There will be also created out<iteration#>.log files for each run of the tests which carry additional log messages from the udisks daemon.
+
+The issue itself is created by switched up names of temporary backing files created by functions test_loop_rw (failing one) and test_loop_ro.
+Comparison of the log files with backing file names have not resulted in any addtional information.
+Using both original and libblockdev approaches together showed occasional difference in functions results nevetherless unrelevant to the issue occurence.
+Adding sleep(5) to the beginning of each of these functions lowered freqency of error (to cca 1 out of 160).
+
+

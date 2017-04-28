@@ -1,0 +1,4 @@
+#!/bin/bash
+
+rm tests_output.log; for i in $(seq 1 30); do sudo ./src/tests/integration-test -lout${i}.log Manager 2>&1 |& tee -a tests_output.log |  grep -B3 AssertionError && echo "ITERATION ${i}"; done
+
